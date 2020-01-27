@@ -1,0 +1,50 @@
+<?php
+        $autoloader = join(DIRECTORY_SEPARATOR,[__DIR__,'vendor','autoload.php']);
+        require $autoloader;
+
+        //We import the classes that we need
+        use PHPOnCouch\CouchClient;
+        use PHPOnCouch\Exceptions;
+
+        //We create a client to access the database
+        $client = new CouchClient('http://localhost:5984','contactsapp');
+
+        try {
+        $info = $client->getDatabaseInfos();
+        } catch (Exception $e) {
+        echo "Error:".$e->getMessage()." (errcode=".$e->getCode().")\n";
+        exit(1);
+        }
+        print_r($info);
+
+        try {
+            $doc = $client->getDoc('d99c5686c799bf6499e4dbc76a003e7e');
+        } catch (Exception $e) {
+            if ( $e->code() == 404 ) {
+                echo "Document not found\n";
+            } else {
+                echo "Error: ".$e->getMessage()." (errcode=".$e->getCode().")\n";
+            }
+            exit(1);
+        }
+        print_r($doc);
+
+        $all_docs = $client->getAllDocs();
+        echo "Database got ".$all_docs->total_rows." documents.<BR>\n";
+        foreach ( $all_docs->rows as $row ) {
+            echo "Document ".$row->id."<BR>\n";
+        }
+
+        // get the document
+        try {
+            $doc = $client->getDoc('d99c5686c799bf6499e4dbc76a008064');
+        } catch (Exception $e) {
+            echo "ERROR: ".$e->getMessage()." (".$e->getCode().")<br>\n";
+        }
+        // permanently remove the document
+        try {
+            $client->deleteDoc($doc);
+        } catch (Exception $e) {
+            echo "ERROR: ".$e->getMessage()." (".$e->getCode().")<br>\n";
+        }
+    ?>
